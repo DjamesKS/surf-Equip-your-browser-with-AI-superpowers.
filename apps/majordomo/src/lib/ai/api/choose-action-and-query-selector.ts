@@ -17,21 +17,34 @@ export async function chooseActionAndQuerySelector({
   pageOpts: PageOpts;
 }): Promise<Action[]> {
   try {
-    const formData = new FormData();
-    formData.append("userIntent", userIntent);
-    formData.append("hostname", pageOpts.hostname);
-    formData.append("htmlDom", JSON.stringify(minifiedElements));
-    formData.append("history", JSON.stringify(history));
+    const requestData = {
+      userIntent,
+      hostname: pageOpts.hostname,
+      htmlDom: JSON.stringify(minifiedElements),
+      history: JSON.stringify(history),
+    };
+
+    console.log("Request data:", {
+      userIntent,
+      hostname: pageOpts.hostname,
+      htmlDomLength: requestData.htmlDom.length,
+      historyLength: requestData.history.length,
+    });
 
     const res = await fetch(
       `${SERVER_URL}/api/choose-action-and-query-selector`,
       {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestData),
       },
     );
     if (!res.ok) {
-      throw new Error("non-2xx http status");
+      const errorText = await res.text();
+      throw new Error(`non-2xx http status: ${res.status}, ${errorText}`);
     }
 
     const data = (await res.json()) as z.infer<

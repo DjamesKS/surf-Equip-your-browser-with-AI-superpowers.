@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { chooseActionAndQuerySelectorResponseSchema } from "@repo/ai-schemas";
 import { MinifiedElement, minifiedElementToString } from "@repo/types";
-import { claudeSonnet } from "~/src/lib/ai/clients/anthropic";
+import { gpt4o } from "~/src/lib/ai/clients/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -13,11 +13,11 @@ const LOG_MINIFIED_DOM = process.env.NODE_ENV === "development" && true;
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
-    const userIntent = formData.get("userIntent") as string | null;
-    const hostname = formData.get("hostname") as string | null;
-    const htmlDomStr = formData.get("htmlDom") as string | null;
-    const historyStr = formData.get("history") as string | null;
+    const requestData = await req.json();
+    const userIntent = requestData.userIntent;
+    const hostname = requestData.hostname;
+    const htmlDomStr = requestData.htmlDom;
+    const historyStr = requestData.history;
 
     if (!userIntent) {
       throw new Error("missing userIntent");
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     const { object } = await generateObject({
-      model: claudeSonnet,
+      model: gpt4o,
       system: constructPrompt(hostname as string),
       messages: [
         {
@@ -75,10 +75,22 @@ export async function POST(req: Request) {
     const actions = filterActions(object);
     console.log("\nNext actions:", actions);
 
-    return new Response(JSON.stringify({ actions }), { status: 200 });
+    return new Response(JSON.stringify({ actions }), {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    });
   } catch (err) {
     console.error("chooseAction:", err);
-    return new Response(JSON.stringify(err), { status: 500 });
+    return new Response(JSON.stringify(err), {
+      status: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    });
   }
 }
 

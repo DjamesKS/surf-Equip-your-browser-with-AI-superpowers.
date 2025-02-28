@@ -8,10 +8,7 @@ const { DEV, VITE_DEV_NAME } = import.meta.env;
 /**
  * Just for @chrispy on his local machine, default to remote server
  */
-export const SERVER_URL =
-  DEV && VITE_DEV_NAME === "scottsus"
-    ? "http://localhost:3000"
-    : "https://majordomo-web.vercel.app";
+export const SERVER_URL = "http://localhost:3000";
 
 if (DEV) {
   console.log("Surf server:", SERVER_URL);
