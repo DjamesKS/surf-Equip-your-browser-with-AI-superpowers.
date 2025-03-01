@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { chooseActionAndQuerySelectorResponseSchema } from "@repo/ai-schemas";
 import { MinifiedElement, minifiedElementToString } from "@repo/types";
-import { gpt4o } from "~/src/lib/ai/clients/openai";
+import { defaultProvider } from "~/src/lib/ai/clients/default-provider";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     const { object } = await generateObject({
-      model: gpt4o,
+      model: defaultProvider,
       system: constructPrompt(hostname as string),
       messages: [
         {
