@@ -1,7 +1,7 @@
 export type Action =
   | { type: "navigate"; url: string }
   | { type: "clarify"; question: string }
-  | { type: "click"; idx: number; description: string }
+  | { type: "click"; idx: number; description: string; elementRect?: DOMRect }
   | {
       type: "input";
       idx: number;
@@ -19,7 +19,7 @@ export function stringify(action: Action) {
     case "clarify":
       return `${action.question}`;
     case "click":
-      return `clicking "${action.description}"...`;
+      return `clicking "${action.description}" at ${action.elementRect?.x}, ${action.elementRect?.y}...`;
     case "input":
       return `typing ${action.content}...`;
     case "refresh":

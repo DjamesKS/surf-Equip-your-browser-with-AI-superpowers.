@@ -165,6 +165,7 @@ export async function runUntilCompletion({
             const clickActionResponse = await takeClickAction({
               querySelector,
               cursorOpts,
+              elementRect: action.elementRect,
             });
             runnable = clickActionResponse.runnable;
             break;

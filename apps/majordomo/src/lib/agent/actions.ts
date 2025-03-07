@@ -96,6 +96,7 @@ export async function takeClarifyAction({
 export async function takeClickAction({
   querySelector,
   cursorOpts,
+  elementRect,
 }: {
   querySelector: string;
   cursorOpts: {
@@ -103,11 +104,12 @@ export async function takeClickAction({
     updateCursorPosition: (coord: CursorCoordinate) => Promise<void>;
     setCursorPosition: React.Dispatch<React.SetStateAction<CursorCoordinate>>;
   };
+  elementRect?: DOMRect;
 }): Promise<{
   runnable?: (() => Promise<any>) | undefined;
 }> {
   const runnable = async () => {
-    await moveToElement({ querySelector, cursorOpts });
+    await moveToElement({ querySelector, cursorOpts, elementRect });
   };
 
   return { runnable };
@@ -172,6 +174,7 @@ export async function takeBackAction() {
 async function moveToElement({
   querySelector,
   cursorOpts,
+  elementRect,
 }: {
   querySelector: string;
   cursorOpts: {
@@ -179,6 +182,7 @@ async function moveToElement({
     updateCursorPosition: (coord: CursorCoordinate) => Promise<void>;
     setCursorPosition: React.Dispatch<React.SetStateAction<CursorCoordinate>>;
   };
+  elementRect?: DOMRect;
 }): Promise<{ ok: boolean; element: Element | null }> {
   try {
     const target = document.querySelector(querySelector);
@@ -187,9 +191,20 @@ async function moveToElement({
       return { ok: false, element: null };
     }
 
-    const rect = target.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const targetRect = target.getBoundingClientRect();
+
+    const rect = elementRect ?? targetRect;
+    let centerX;
+    let centerY;
+
+    if (elementRect) {
+      centerX = rect.x + rect.width / 2;
+      centerY = rect.y + rect.height / 2;
+    } else {
+      centerX = targetRect.left + targetRect.width / 2;
+      centerY = targetRect.top + targetRect.height / 2;
+    }
+
     let newCoords: CursorCoordinate = { x: 0, y: 0 };
 
     let timeoutId: NodeJS.Timeout | undefined;

@@ -24,11 +24,14 @@ export async function POST(req: Request) {
     }
 
     const htmlDom: MinifiedElement[] = htmlDomStr ? JSON.parse(htmlDomStr) : [];
+    // const htmlDomInput = `Here is a list of DOM elements to choose from:
+    // ${htmlDom.map(minifiedElementToString).join("\n").substring(0, MAX_HTML_DOM_LEN)}`;
     const htmlDomInput = `Here is a list of DOM elements to choose from:
-    ${htmlDom.map(minifiedElementToString).join("\n").substring(0, MAX_HTML_DOM_LEN)}`;
+    ${htmlDom.map(minifiedElementToString).join("\n")}`;
     if (LOG_MINIFIED_DOM) {
       const filePath = path.join(process.cwd(), "minified_dom.txt");
-      fs.appendFileSync(filePath, htmlDomInput);
+      // fs.appendFileSync(filePath, htmlDomInput);
+      fs.writeFileSync(filePath, htmlDomInput);
       console.log(`Minified DOM saved to ${filePath}`);
     }
 

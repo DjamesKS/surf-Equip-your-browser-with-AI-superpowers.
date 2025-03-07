@@ -70,14 +70,36 @@ export function minifyDom({
     }
     existingElements.add(key);
 
+    const htmlElement = JSON.stringify({
+      tag: el.tagName,
+      id: el.id?.length > 0 ? el.id : undefined,
+      class: el.className?.length > 0 ? el.className : undefined,
+      text:
+        el.textContent && el.textContent.length > 0
+          ? el.textContent.substring(0, MAX_TOPIC_LEN)
+          : undefined,
+      attributes: Array.from(el.attributes).map((attr) => ({
+        name: attr.name,
+        value: attr.value,
+      })),
+      rect: rect
+        ? {
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            left: rect.left,
+          }
+        : undefined,
+      role: el.getAttribute("role") ?? undefined,
+      type: el.getAttribute("type") ?? undefined,
+    });
+
     const newElement: MinifiedElement = {
-      tag,
-      id,
-      topic,
       idx,
       meta: {
         querySelector: getQuerySelector(el, pageOpts.includeIdInQuerySelector),
       },
+      htmlElement,
     };
     minifiedDom.push(newElement);
   });
