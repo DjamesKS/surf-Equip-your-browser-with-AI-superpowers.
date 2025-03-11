@@ -10,11 +10,13 @@ export async function chooseActionAndQuerySelector({
   minifiedElements,
   history,
   pageOpts,
+  screenshot,
 }: {
   userIntent: string;
   minifiedElements: MinifiedElement[];
   history: ActionMetadata[][];
   pageOpts: PageOpts;
+  screenshot?: string;
 }): Promise<Action[]> {
   try {
     const requestData = {
@@ -22,6 +24,7 @@ export async function chooseActionAndQuerySelector({
       hostname: pageOpts.hostname,
       htmlDom: JSON.stringify(minifiedElements),
       history: JSON.stringify(history),
+      screenshot,
     };
 
     console.log("Request data:", {
@@ -29,6 +32,7 @@ export async function chooseActionAndQuerySelector({
       hostname: pageOpts.hostname,
       htmlDomLength: requestData.htmlDom.length,
       historyLength: requestData.history.length,
+      hasScreenshot: !!screenshot,
     });
 
     const res = await fetch(
@@ -54,5 +58,68 @@ export async function chooseActionAndQuerySelector({
   } catch (err) {
     console.error("chooseAction:", err);
     return [];
+  }
+}
+
+async function captureScreenshotViaBackground(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    console.log("Content script requesting screenshot from background");
+
+    chrome.runtime.sendMessage({ action: "captureScreenshot" }, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+
+      if (response && response.screenshot) {
+        console.log("Content script received screenshot from background");
+        resolve(response.screenshot);
+      } else {
+        reject(new Error(response?.error || "Failed to capture screenshot"));
+      }
+    });
+  });
+}
+
+export async function chooseActionWithScreenshot({
+  userIntent,
+  minifiedElements,
+  history,
+  pageOpts,
+}: {
+  userIntent: string;
+  minifiedElements: MinifiedElement[];
+  history: ActionMetadata[][];
+  pageOpts: PageOpts;
+}): Promise<Action[]> {
+  try {
+    // Try to capture screenshot via background script
+    let screenshot: string | undefined;
+
+    try {
+      screenshot = await captureScreenshotViaBackground();
+      console.log("Screenshot captured successfully");
+    } catch (error) {
+      console.error("Error capturing screenshot:", error);
+      // Continue without screenshot
+    }
+
+    // Call chooseActionAndQuerySelector with the screenshot if available
+    return await chooseActionAndQuerySelector({
+      userIntent,
+      minifiedElements,
+      history,
+      pageOpts,
+      screenshot,
+    });
+  } catch (error) {
+    console.error("Error in chooseActionWithScreenshot:", error);
+    // Fallback to no screenshot
+    return await chooseActionAndQuerySelector({
+      userIntent,
+      minifiedElements,
+      history,
+      pageOpts,
+    });
   }
 }

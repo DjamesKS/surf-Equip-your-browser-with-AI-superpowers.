@@ -2,6 +2,7 @@ const LOG_SPECIFIC_PROMPT = true;
 
 export function constructPrompt(hostname: string) {
   const specificPrompt = hostnamePromptMapping[hostname];
+  console.log("specificPrompt", specificPrompt);
   if (LOG_SPECIFIC_PROMPT && specificPrompt) {
     return `${generalPrompt}\n\n${specificPrompt}`;
   }
@@ -87,11 +88,12 @@ The textarea to make a post is tricky. Particularly if the user wants to make a 
 X is particularly tricky. Remember, only ONE ACTION IS ALLOWED!
 `;
 
-const userEatsPrompt = `For UberEats:
-
+const userEatsPrompt = `
 Really focus on what items the user wants.
-
 Prefer to press "+" button corresponding to the item you need to add instead of clicking each product for the product page.
+If you see a dialog with a product description and a button to order, first analyze how many items the user wants to order.
+Then, select corresponding amount in the dialog. Only after that, click on button to order.
+After clicking on the button to order, you should close the dialog, and you're done.
 `;
 
 // const grubhubPrompt = `For Grubhub:

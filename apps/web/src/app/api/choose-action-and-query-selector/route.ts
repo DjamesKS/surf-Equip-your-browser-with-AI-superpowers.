@@ -3,7 +3,7 @@ import path from "path";
 import { chooseActionAndQuerySelectorResponseSchema } from "@repo/ai-schemas";
 import { MinifiedElement, minifiedElementToString } from "@repo/types";
 import { defaultProvider } from "~/src/lib/ai/clients/default-provider";
-import { generateObject } from "ai";
+import { generateObject, type Message } from "ai";
 import { z } from "zod";
 
 import { constructPrompt } from "./prompts";
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     const hostname = requestData.hostname;
     const htmlDomStr = requestData.htmlDom;
     const historyStr = requestData.history;
+    const screenshot = requestData.screenshot;
 
     if (!userIntent) {
       throw new Error("missing userIntent");
@@ -55,23 +56,63 @@ export async function POST(req: Request) {
       console.log("\nPrevious actions:\n", prevActions);
     }
 
+    // Create the base messages array
+    const messages = [
+      {
+        role: "user" as const,
+        content: `Here is the sequence of previously attempted actions:\n${prevActions}.`,
+      },
+      {
+        role: "user" as const,
+        content: userIntent,
+      },
+      {
+        role: "user" as const,
+        content: htmlDomInput,
+      },
+    ];
+
+    // If screenshot is provided, save it and include it in the messages
+    if (screenshot) {
+      console.log("Screenshot provided, saving and including in prompt");
+
+      try {
+        // Save the screenshot
+        const base64Data = screenshot.replace(/^data:image\/jpeg;base64,/, "");
+        const filePath = path.join(process.cwd(), "screenshot.jpg");
+        fs.writeFileSync(filePath, base64Data, "base64");
+        console.log(`Screenshot saved to ${filePath}`);
+
+        // Add a message with the file reference
+        messages.push({
+          role: "user" as const,
+          content: [
+            {
+              type: "text" as const,
+              text: "Here is a screenshot of the webpage. Use it to help identify the correct elements based on their visual appearance and position:",
+            },
+            {
+              type: "image" as const,
+              image: fs.readFileSync(filePath),
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error processing screenshot:", error);
+        // Fallback to text-only message
+        messages.push({
+          role: "user" as const,
+          content: "A screenshot was provided but could not be processed.",
+        });
+      }
+    } else {
+      console.log("No screenshot provided, skipping");
+    }
+
     const { object } = await generateObject({
       model: defaultProvider,
       system: constructPrompt(hostname as string),
-      messages: [
-        {
-          role: "user",
-          content: `Here is the sequence of previously attempted actions:\n${prevActions}.`,
-        },
-        {
-          role: "user",
-          content: userIntent,
-        },
-        {
-          role: "user",
-          content: htmlDomInput,
-        },
-      ],
+      messages: messages as Message[],
       schema: chooseActionAndQuerySelectorResponseSchema,
     });
 
@@ -107,5 +148,11 @@ function filterActions(
 
   return actions
     .filter((action) => action.type !== "done")
-    .filter((action) => action.idx !== -1);
+    .filter((action) => {
+      // Only check idx for actions that might have it
+      if ("idx" in action) {
+        return action.idx !== -1;
+      }
+      return true;
+    });
 }

@@ -237,4 +237,34 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   }
 });
 
+// Add this to your background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "captureScreenshot") {
+    console.log("Background script received screenshot request");
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const windowId = tabs[0]?.windowId;
+      if (windowId === undefined) {
+        sendResponse({ error: "Could not determine window ID" });
+        return;
+      }
+
+      chrome.tabs.captureVisibleTab(
+        windowId,
+        { format: "jpeg", quality: 70 },
+        (dataUrl) => {
+          if (chrome.runtime.lastError) {
+            sendResponse({ error: chrome.runtime.lastError.message });
+          } else {
+            console.log("Screenshot captured successfully");
+            sendResponse({ screenshot: dataUrl });
+          }
+        },
+      );
+    });
+
+    return true; // Required for async response
+  }
+});
+
 console.log("listeners initialized");

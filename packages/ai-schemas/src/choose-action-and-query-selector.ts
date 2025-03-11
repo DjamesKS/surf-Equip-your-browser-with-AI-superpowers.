@@ -14,12 +14,14 @@ const clickAction = z.object({
   type: z.literal("click"),
   idx: z.number(),
   description: z.string(),
-  elementRect: z.object({
-    x: z.number(),
-    y: z.number(),
-    width: z.number(),
-    height: z.number(),
-  }),
+  elementRect: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      width: z.number(),
+      height: z.number(),
+    })
+    .optional(),
 });
 
 const inputAction = z.object({

@@ -22,7 +22,12 @@
     "128": "surf.png"
   },
   "permissions": [
-    "tabCapture"
+    "activeTab",
+    "tabCapture",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ],
   "content_scripts": [
     {
