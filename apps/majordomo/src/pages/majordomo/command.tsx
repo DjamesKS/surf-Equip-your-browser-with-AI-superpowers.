@@ -123,7 +123,7 @@ export function CommandBar() {
           >
             <input
               ref={inputRef}
-              placeholder="Talk to surf..."
+              placeholder="Talk to Plato..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="w-full rounded-xl bg-transparent text-xl [&::selection]:bg-blue-200 [&::selection]:text-blue-800"
@@ -163,7 +163,7 @@ export function CommandBar() {
           }}
         />
 
-        <h3
+        {/* <h3
           className="text-xs font-medium"
           style={{
             color: "#BFBFBF",
@@ -199,7 +199,7 @@ export function CommandBar() {
             number={numCustomSuggestions + 4}
             setters={{ setInputValue, setUserIntent, setIsVisible }}
           />
-        </div>
+        </div> */}
       </div>
 
       <div
