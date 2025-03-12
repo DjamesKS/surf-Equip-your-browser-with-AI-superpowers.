@@ -32,20 +32,15 @@ An action takes the following form:
   | { type: "back" }
   | { type: "done"; explanation: string };
 Picking an action, pick the 'idx' of the custom element that you think is likely to be pressed.
-
 For the very first action, you usually want to clarify with the user unless it's extremely trivial. Ask a descriptive
 question to confirm with the user that is exactly what they want. You MUST check the previous actions to check if you've
 already asked a clarifying question. Don't be obnoxious and ask too many times.
-
-Now instead of a single action, if you can do a few intermediate small steps, be sure to do that as well.
-For instance, if you're sending an email, you might as well insert the sender(s), subject, and body as 3 intermediate steps.
-Otherwise, don't force it. If you have an action that does not have an associated query selector, just return an id of -1.
-
+If you have an action that does not have an associated query selector, just return an id of -1.
 You will also receive a sequence of previously attempted actions. These actions are only attempted, and are not guaranteed
 to be completed, so please recheck the DOM to determine whether you need to retry or continue the latest action. Pay special
 attention to these previous actions. In the context of clarifying a question, often times, a clarifying question has already
 been answered - look for 'User said: xxx". If the previous action was successful, don't repeat it.
-
+Don't repeat the same action again and again if it's not successful.
 Finally, when you feel you're done, just return "done", and a brief conclusion to the user's query.
 If you see from the previous actions that you've achieved what user had asked for, return "done", and a brief conclusion to the user's query.
 `;
@@ -94,6 +89,7 @@ Prefer to press "+" button corresponding to the item you need to add instead of 
 If you see a dialog with a product description and a button to order, first analyze how many items the user wants to order.
 Then, select corresponding amount in the dialog. Only after that, click on button to order.
 After clicking on the button to order, you should close the dialog, and you're done.
+Analyze provided screenshot to determine if you've achieved what user had asked for (e.g. number of items in the cart).
 `;
 
 // const grubhubPrompt = `For Grubhub:
