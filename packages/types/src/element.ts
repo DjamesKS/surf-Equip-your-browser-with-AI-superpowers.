@@ -14,5 +14,5 @@ export function minifiedElementToString(element: MinifiedElement) {
   // const { tag, id, topic, htmlElement, idx } = element;
   // return `<${tag} id="#${id}" topic="${topic}" element=${htmlElement} idx=${idx} />`;
   const { htmlElement, idx } = element;
-  return `<${htmlElement} idx=${idx} />`;
+  return `<${htmlElement.replaceAll('"tag":', "")} idx=${idx} />`;
 }
